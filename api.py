@@ -277,16 +277,20 @@ def get_post_user():
         return jsonify({'ok': False, 'message': 'Token JWT invalide ou expiré'}), 401
     user_id = user_info['id']
     user_post = post_db.find({'userId': user_id})
-    list_post = list(user_post)
-    response_data = {
-        'ok': True,
-        'data': list_post
-    }
-    return dumps(response_data), 200
+    if user_post :
+        list_post = list(user_post)
+        response_data = {
+            'ok': True,
+            'data': list_post
+        }
+        return dumps(response_data), 200
+    else:
+        return jsonify({'ok': False, 'message': 'Post introuvable'}), 404
 
 @app.route('/post/<id>', methods=['GET'])
 def get_post_id(id):
     data = id
+    print(data)
     if 'Authorization' not in request.headers:
         return jsonify({'error': 'Authorization manquant'}), 401
     token = request.headers['Authorization']
@@ -298,15 +302,19 @@ def get_post_id(id):
     user_id = user_info['id']
     post_id = ObjectId(data)
     user_post = post_db.find_one({'_id': post_id})
-    response_data = {
-        'ok': True,
-        'data': user_post
-    }
-    return dumps(response_data), 200
+    if user_post:
+        response_data = {
+            'ok': True,
+            'data': user_post
+        }
+        return dumps(response_data), 200
+    else:
+        return jsonify({'ok': False, 'message': 'Post introuvable'}), 404
 
 @app.route('/post/<id>', methods=['DELETE'])
 def del_post_id(id):
     data = id
+    print(data)
     if 'Authorization' not in request.headers:
         return jsonify({'error': 'Authorization manquant'}), 401
     token = request.headers['Authorization']
