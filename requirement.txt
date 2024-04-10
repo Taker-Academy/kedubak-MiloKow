@@ -1,0 +1,6 @@
+Flask
+pymongo
+fastapi
+Flask
+Flask-Cors
+PyJWT

@@ -290,7 +290,6 @@ def get_post_user():
 @app.route('/post/<id>', methods=['GET'])
 def get_post_id(id):
     data = id
-    print(data)
     if 'Authorization' not in request.headers:
         return jsonify({'error': 'Authorization manquant'}), 401
     token = request.headers['Authorization']
@@ -314,7 +313,6 @@ def get_post_id(id):
 @app.route('/post/<id>', methods=['DELETE'])
 def del_post_id(id):
     data = id
-    print(data)
     if 'Authorization' not in request.headers:
         return jsonify({'error': 'Authorization manquant'}), 401
     token = request.headers['Authorization']
@@ -333,6 +331,28 @@ def del_post_id(id):
             'data': user_post
         }
         return dumps(response_data), 200
+
+@app.route('/post/vote/<id>', methods=['POST'])
+def up_vote(id):
+    data = id
+    if 'Authorization' not in request.headers:
+        return jsonify({'error': 'Authorization manquant'}), 401
+    token = request.headers['Authorization']
+    if not token:
+        return jsonify({'ok': False, 'message': 'Token JWT manquant'}), 401
+    user_info = decode_token(token)
+    if not user_info:
+        return jsonify({'ok': False, 'message': 'Token JWT invalide ou expiré'}), 401
+    user_id = user_info['id']
+    post_id = ObjectId(data)
+    user_post = post_db.find_one({'_id': post_id})
+    if user_post:
+        if user_id not in user_post['upVotes']:
+            user_post['upVotes'].append(user_id)
+            post_db.update_one({'_id': ObjectId(user_id)}, {'$set': {'upVotes': user_post['upVotes']}})
+            return jsonify({'ok': True, 'message': 'post upvoted'}), 200
+        else :
+            return jsonify({'ok': False, 'message': 'Conflict: Vous avez déjà voté pour ce post'}), 409
 
 if __name__ == '__main__':
     app.run(port=8080, debug=True)
